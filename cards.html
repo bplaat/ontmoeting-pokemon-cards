@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ontmoeting Pokemon Cards</title>
+    <script src="https://unpkg.com/vue@2.7.15/dist/vue.min.js"></script>
+    <style>
+        :root {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+        }
+
+        body {
+            margin: 0;
+        }
+
+        #app {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+        }
+
+        .card {
+            display: flex;
+            width: 1fr;
+            border: 1px solid black;
+            margin: 1rem;
+        }
+
+        .type {
+            background-color: #000;
+            color: #fff;
+            font-weight: bold;
+            padding: 0.2rem;
+        }
+
+        .level {
+            display: inline-block;
+            background-color: #fff;
+            color: #000;
+            width: 1rem;
+            text-align: center;
+            border-radius: 50%;
+            margin-left: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="card" v-for="pokemon in pokemons" :key="pokemon.id">
+            <div style="flex: 3; display: flex; flex-direction: column">
+                <div style="flex: 1"></div>
+                <img :src="`./pokemons/${pokemon.id}.png`" style="display: block; width: 100%" />
+                <div style="flex: 1"></div>
+                <div style="padding: 1rem; border-top: 1px solid black">
+                    <h2 style="margin-top: 0">{{ pokemon.name }}</h2>
+                    <p>
+                        <span class="type" style="margin-right: 0.5rem" v-for="type in pokemon.types">{{ type }}</span>
+                    </p>
+                </div>
+            </div>
+            <div style="
+            border-left: 1px solid black;
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+          ">
+                <div style="padding: 1rem">
+                    <h3 style="margin-top: 0; margin-bottom: 0.5rem; color: green">
+                        Wint van
+                    </h3>
+
+                    <p style="margin: 1px 0; display: flex" class="type" v-for="(type, index) in pokemon.wins">
+                        {{ type }}
+
+                        <span style="flex: 1"></span>
+
+                        <span class="level" style="background-color: burlywood"
+                            v-if="index <= Math.floor(pokemon.wins.length / 3)">1</span>
+                        <span class="level" style="background-color: lightgray"
+                            v-else-if="index <= Math.floor(pokemon.wins.length / 3 * 2)">2</span>
+                        <span class="level" style="background-color: gold" v-else>3</span>
+                    </p>
+                </div>
+
+                <div style="flex: 1"></div>
+
+                <div style="
+              border-top: 1px solid black;
+              text-align: center;
+              display: flex;
+              flex-direction: column;
+              justify-content: center;
+            ">
+                    <h3 style="margin-bottom: 0.5rem">Level</h3>
+                    <h3 style="
+                margin-top: 0;
+                font-family: monospace;
+                font-size: 1.5rem;
+                margin-right: 1rem;
+              ">
+                        I
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const app = new Vue({
+            el: "#app",
+            data: {
+                types: {},
+                pokemons: [],
+            },
+
+            async mounted() {
+                const types = await (await fetch("./types.json")).json();
+                for (const type of types)
+                    this.types[type.name] = type;
+
+                this.pokemons = await (await fetch("./pokemons.json")).json();
+                for (const pokemon of this.pokemons) {
+                    pokemon.wins = [];
+                    for (const type of pokemon.types)
+                        pokemon.wins.push(...this.types[type].double_damage_to);
+                    pokemon.wins.sort(() => 0.5 - Math.random());
+                }
+            },
+        });
+    </script>
+</body>
+
+</html>
